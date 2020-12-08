@@ -21,8 +21,7 @@ import youtube_dl
 sys.path.append('FaceLandmarkDetection')
 import face_alignment
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-import time
-from progress.bar import IncrementalBar
+
 
 ################# functions of crop and align face images #################
 
@@ -154,372 +153,200 @@ if __name__ == '__main__':
     ########################### Test Param ################################
     gpu_ids = [] # gpu id. if use cpu, set gpu_ids = []
     UpScaleWhole = 4  # the upsamle scale. It should be noted that our face results are fixed to 512.
-    #TestImgPath = opt.test_path
-    #ResultsDir = opt.results_dir
-    #UpScaleWhole = opt.upscale_factor
-
-    '''
-    print("\nYou will load photo or video:\n1) video\n2) photo")
-    answer = 0
-    fl=True
-    while fl:
-        answer = input()
-        if answer=='1' or answer=='2':
-            fl=False
-        else:
-            print('Error. Repeat input.')
-    '''
-
-    if True:
-        TestImgPath = './TestData/TestVideo' # test video path
-        ResultsDir = './Results/TestVideoResults' #save path
-        print('\n###################### Now Running the {} task ##############################'.format(6))
 
 
-        print('\n####################### Step 1: Download and crop video. Splitting into frames ###########################\n')
+    TestImgPath = './TestData/TestVideo' # test video path
+    ResultsDir = './Results/TestVideoResults' #save path
+    print('\n###################### Now Running the {} task ##############################'.format(6))
 
-        #You can paste the YouTube link here
-        #print('Enter YouTube link for video: ')
-        #source_url = input()
-        #source_url = 'https://www.youtube.com/watch?v=si-thUvEvls'
-        if source_url == '':
-            uploaded = files.upload()
-            for fn in uploaded.keys():
-                print('User uploaded file "{name}" with length {length} bytes'.format(name=fn, length=len(uploaded[fn])))
-            file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
-        else:
-            try:
-                ydl_opts = {
-                    #'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
-                    'format': 'bestvideo+audio/mp4',
-                    'outtmpl': 'TestData/TestVideo/downloaded_video.mp4',
-                    }
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([source_url])
-                file_name = 'TestData/TestVideo/downloaded_video.mp4'
-            except BaseException:
-                fn = source_url.split('/')[-1]
-                file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
+    print('\n####################### Step 1: Download and crop video. Splitting into frames ###########################\n')
 
-        #Crop video (h:m:s)
-        #print('\nEnter time for cropping video: start (h:m:s), end (h:m:s)\nP.s. start = 00:00:00 and end = 00:00:00 its full video\n')
-        #target_start = input()
-        #target_end = input()
-        #target_start = '00:00:34'
-        #target_end = '00:00:36'
-        if target_end != '00:00:00':
-            dates1 = target_start.split(':')
-            dates2 = target_end.split(':')
-            target_start = int(dates1[0])*60*60 + int(dates1[1])*60 + int(dates1[2])
-            target_end = int(dates2[0])*60*60 + int(dates2[1])*60 + int(dates2[2])
-            SaveInputPath = os.path.join(ResultsDir,'Step1_Cropping')
-            if not os.path.exists(SaveInputPath):
-                os.makedirs(SaveInputPath)
-            new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
-            ffmpeg_extract_subclip(file_name, target_start, target_end, targetname=new_file_name)
-            os.remove(file_name)
-            file_name = new_file_name
-
-        '''
-        SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')
-        if not os.path.exists(SaveFramesPath):
-            os.makedirs(SaveFramesPath)
-
-        vidcap = cv2.VideoCapture(file_name)
-        success, image = vidcap.read()
-        count = 0
-        success = True
-        while success:
-            cv2.imwrite(SaveFramesPath+"/frame%09d.jpg" % count, image)
-            success,image = vidcap.read()
-            count += 1
+    if source_url == '':
+        uploaded = files.upload()
+        for fn in uploaded.keys():
+            print('User uploaded file "{name}" with length {length} bytes'.format(name=fn, length=len(uploaded[fn])))
+        file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
+    else:
         try:
-            fps_of_video = int(cv2.VideoCapture(file_name).get(cv2.CAP_PROP_FPS))
-            frames_of_video = int(cv2.VideoCapture(file_name).get(cv2.CAP_PROP_FRAME_COUNT))
-            print("Video uploaded. Number of frames: {}.".format(str(count)))
-        except:
-            print("Video uploaded!\n")
-        barsize = count
+            ydl_opts = {
+                'format': 'bestvideo+audio/mp4',
+                'outtmpl': 'TestData/TestVideo/downloaded_video.mp4',
+                }
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([source_url])
+            file_name = 'TestData/TestVideo/downloaded_video.mp4'
+        except BaseException:
+            fn = source_url.split('/')[-1]
+            file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
 
-
-        ###########Step 2: Crop and Align Face from the whole Image ###########
-        print('\n####################### Step 2: Crop and Align Face ###########################\n')
-        detector = dlib.cnn_face_detection_model_v1('./packages/mmod_human_face_detector.dat')
-        sp = dlib.shape_predictor('./packages/shape_predictor_5_face_landmarks.dat')
-        reference = np.load('./packages/FFHQ_template.npy') / 2
-
-        SaveCropPath = os.path.join(ResultsDir,'Step2_CropImg')
-        if not os.path.exists(SaveCropPath):
-            os.makedirs(SaveCropPath)
-        SaveParamPath = os.path.join(ResultsDir,'Step2_AffineParam') #save the inverse affine parameters
-        if not os.path.exists(SaveParamPath):
-            os.makedirs(SaveParamPath)
-
-        ImgPaths = make_dataset(SaveFramesPath)
-        mylist = [i+1 for i in range(barsize)]
-        bar = IncrementalBar('Process', max = len(mylist))
-
-        for i, ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            #print('Crop and Align {} image'.format(ImgName))
-            bar.next()
-            SavePath = os.path.join(SaveCropPath,ImgName)
-            SaveInput = os.path.join(SaveFramesPath,ImgName)
-            SaveParam = os.path.join(SaveParamPath, ImgName+'.npy')
-            align_and_save(ImgPath, SavePath, SaveInput, SaveParam, UpScaleWhole)
-        bar.finish()
-
-        ####### Step 3: Face Landmark Detection from the Cropped Image ########
-        print('\n####################### Step 3: Face Landmark Detection #######################\n')
-        SaveLandmarkPath = os.path.join(ResultsDir,'Step3_Landmarks')
-
-        if len(gpu_ids) > 0:
-            dev = 'cuda:{}'.format(gpu_ids[0])
-        else:
-            dev = 'cpu'
-        FD = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D,device=dev, flip_input=False)
-        if not os.path.exists(SaveLandmarkPath):
-            os.makedirs(SaveLandmarkPath)
-
-        ImgPaths = make_dataset(SaveCropPath)
-
-        mylist = [i+1 for i in range(barsize)]
-        bar = IncrementalBar('Process', max = len(mylist))
-
-        for i,ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            #print('Detecting {}'.format(ImgName))
-            bar.next()
-            Img = io.imread(ImgPath)
-            try:
-                PredsAll = FD.get_landmarks(Img)
-            except:
-                print('\t################ Error in face detection, continue...')
-                continue
-            if PredsAll is None:
-                print('\t################ No face, continue...')
-                continue
-            ins = 0
-            if len(PredsAll)!=1:
-                hights = []
-                for l in PredsAll:
-                    hights.append(l[8,1] - l[19,1])
-                ins = hights.index(max(hights))
-                # print('\t################ Warning: Detected too many face, only handle the largest one...')
-                # continue
-            preds = PredsAll[ins]
-            AddLength = np.sqrt(np.sum(np.power(preds[27][0:2]-preds[33][0:2],2)))
-            SaveName = ImgName+'.txt'
-            np.savetxt(os.path.join(SaveLandmarkPath,SaveName),preds[:,0:2],fmt='%.3f')
-        bar.finish()
-
-        ####################### Step 4: Face Restoration ######################
-        print('\n####################### Step 4: Face Restoration ##############################\n')
-        SaveRestorePath = os.path.join(ResultsDir,'Step4_RestoreCropFace')# Only Face Results
-        if not os.path.exists(SaveRestorePath):
-            os.makedirs(SaveRestorePath)
-        model = create_model(opt)
-        model.setup(opt)
-        ImgPaths = make_dataset(SaveCropPath)
-        total = 0
-
-        mylist = [i+1 for i in range(barsize)]
-        bar = IncrementalBar('Process', max = len(mylist))
-
-        for i, ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            #print('Restoring {}'.format(ImgName))
-            bar.next()
-            data = obtain_inputs(SaveCropPath, SaveLandmarkPath, ImgName)
-            if data == 0:
-                print('\t################ Error in landmark file, continue...')
-                continue
-            total = total + 1
-            model.set_input(data)
-            try:
-                model.test()
-                visuals = model.get_current_visuals()
-                save_crop(visuals,os.path.join(SaveRestorePath,ImgName))
-            except Exception as e:
-                print('\t################ Error in enhancing this image: {}'.format(str(e)))
-                print('\t################ continue...')
-                continue
-        bar.finish()
-
-        print('\n############### Step 5: Paste the Restored Face to the Input Image ############\n')
-        SaveRestorePath = os.path.join(ResultsDir,'Step4_RestoreCropFace')
-        SaveFinalPath = os.path.join(ResultsDir,'Step5_FinalFrames')
-        SaveParamPath = os.path.join(ResultsDir,'Step2_AffineParam') #save the inverse affine parameters
-        if not os.path.exists(SaveFinalPath):
-            os.makedirs(SaveFinalPath)
-        ImgPaths = make_dataset(SaveRestorePath)
-
-        mylist = [i+1 for i in range(barsize)]
-        bar = IncrementalBar('Process', max = len(mylist))
-
-        for i,ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            #print('Final Restoring {}'.format(ImgName))
-            bar.next()
-            WholeInputPath = os.path.join('.\Results\TestVideoResults\Step1_Frames', ImgName)
-            FaceResultPath = os.path.join(SaveRestorePath, ImgName)
-            ParamPath = os.path.join(SaveParamPath, ImgName+'.npy')
-            SaveWholePath = os.path.join(SaveFinalPath, ImgName)
-            reverse_align(WholeInputPath, FaceResultPath, ParamPath, SaveWholePath, UpScaleWhole)
-        bar.finish()
-        print('Done!')
-
-        print('\n####################### Step 6: Merging frames into a new video ###########################\n')
-        path_orig_frame = './Results/TestVideoResults/Step1_Frames/'
-        path_to_img = './Results/TestVideoResults/Step5_FinalFrames/'
-        if len(os.listdir(path_to_img)) == 0:
-            path_to_img = './Results/TestVideoResults/Step4_RestoreCropFace/'
-        final_video = './Results/TestVideoResults/Step6_FinalVideo/'
-        if not os.path.exists(final_video):
-            os.makedirs(final_video)
-        img = os.listdir(path_to_img)
-        orig_img = os.listdir(path_orig_frame)
-        orig_img.sort()
-        staffs = []
-        fps_of_video = int(cv2.VideoCapture('./Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4').get(cv2.CAP_PROP_FPS))
-
-        mylist = [i+1 for i in range(barsize)]
-        bar = IncrementalBar('Process', max = len(mylist))
-
-        for i in img:
-            if os.path.isfile(path_to_img + i):
-                staffs.append(path_to_img + i)
-            else:
-                staffs.append(path_orig_frame + i)
-            staff = cv2.imread(staffs[0])  # get size from the 1st frame
-            name_video = final_video+'result.mp4'
-            bar.next()
-            writer = cv2.VideoWriter(
-                name_video,
-                cv2.VideoWriter_fourcc(*'mp4v'),
-                fps_of_video,
-                (staff.shape[1], staff.shape[0]),  # width, height
-                isColor=len(staff.shape) > 2)
-            for staff in map(cv2.imread, staffs):
-                writer.write(staff)
-            writer.release()
-        bar.finish()
-        print('Done!')
-        print('\nRemastering video did success, video name: result.mp4')
-        '''
-
-
-    '''
-    if answer=='2':
-        TestImgPath = './TestData/TestWhole' # test image path
-        ResultsDir = './Results/TestWholeResults' #save path
-        print('\n###################### Now Running the {} task ##############################'.format(UpScaleWhole))
-
-        ###########Step 1: Crop and Align Face from the whole Image ###########
-        print('\n####################### Step 1: Crop and Align Face ###########################\n')
-
-        detector = dlib.cnn_face_detection_model_v1('./packages/mmod_human_face_detector.dat')
-        sp = dlib.shape_predictor('./packages/shape_predictor_5_face_landmarks.dat')
-        reference = np.load('./packages/FFHQ_template.npy') / 2
-        SaveInputPath = os.path.join(ResultsDir,'Step0_Input')
+    #Crop video (h:m:s)
+    if target_end != '00:00:00':
+        dates1 = target_start.split(':')
+        dates2 = target_end.split(':')
+        target_start = int(dates1[0])*60*60 + int(dates1[1])*60 + int(dates1[2])
+        target_end = int(dates2[0])*60*60 + int(dates2[1])*60 + int(dates2[2])
+        SaveInputPath = os.path.join(ResultsDir,'Step1_Cropping')
         if not os.path.exists(SaveInputPath):
             os.makedirs(SaveInputPath)
-        SaveCropPath = os.path.join(ResultsDir,'Step1_CropImg')
-        if not os.path.exists(SaveCropPath):
-            os.makedirs(SaveCropPath)
+        new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
+        ffmpeg_extract_subclip(file_name, target_start, target_end, targetname=new_file_name)
+        os.remove(file_name)
+        file_name = new_file_name
 
-        SaveParamPath = os.path.join(ResultsDir,'Step1_AffineParam') #save the inverse affine parameters
-        if not os.path.exists(SaveParamPath):
-            os.makedirs(SaveParamPath)
+    SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')
+    if not os.path.exists(SaveFramesPath):
+        os.makedirs(SaveFramesPath)
 
-        ImgPaths = make_dataset(TestImgPath)
-        for i, ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            print('Crop and Align {} image'.format(ImgName))
-            SavePath = os.path.join(SaveCropPath,ImgName)
-            SaveInput = os.path.join(SaveInputPath,ImgName)
-            SaveParam = os.path.join(SaveParamPath, ImgName+'.npy')
-            align_and_save(ImgPath, SavePath, SaveInput, SaveParam, UpScaleWhole)
+    vidcap = cv2.VideoCapture(file_name)
+    success, image = vidcap.read()
+    count = 0
+    success = True
+    while success:
+        cv2.imwrite(SaveFramesPath+"/frame%09d.jpg" % count, image)
+        success,image = vidcap.read()
+        count += 1
+    try:
+        fps_of_video = int(cv2.VideoCapture(file_name).get(cv2.CAP_PROP_FPS))
+        frames_of_video = int(cv2.VideoCapture(file_name).get(cv2.CAP_PROP_FRAME_COUNT))
+        print("Video uploaded. Number of frames: {}.".format(str(count)))
+    except:
+        print("Video uploaded!\n")
 
-        ####### Step 2: Face Landmark Detection from the Cropped Image ########
-        print('\n####################### Step 2: Face Landmark Detection #######################\n')
 
-        SaveLandmarkPath = os.path.join(ResultsDir,'Step2_Landmarks')
-        if len(gpu_ids) > 0:
-            dev = 'cuda:{}'.format(gpu_ids[0])
+
+    ###########Step 2: Crop and Align Face from the whole Image ###########
+    print('\n####################### Step 2: Crop and Align Face ###########################\n')
+    detector = dlib.cnn_face_detection_model_v1('./packages/mmod_human_face_detector.dat')
+    sp = dlib.shape_predictor('./packages/shape_predictor_5_face_landmarks.dat')
+    reference = np.load('./packages/FFHQ_template.npy') / 2
+
+    SaveCropPath = os.path.join(ResultsDir,'Step2_CropImg')
+    if not os.path.exists(SaveCropPath):
+        os.makedirs(SaveCropPath)
+    SaveParamPath = os.path.join(ResultsDir,'Step2_AffineParam') #save the inverse affine parameters
+    if not os.path.exists(SaveParamPath):
+        os.makedirs(SaveParamPath)
+
+
+    for i, ImgPath in enumerate(ImgPaths):
+        ImgName = os.path.split(ImgPath)[-1]
+        #print('Crop and Align {} image'.format(ImgName))
+        SavePath = os.path.join(SaveCropPath,ImgName)
+        SaveInput = os.path.join(SaveFramesPath,ImgName)
+        SaveParam = os.path.join(SaveParamPath, ImgName+'.npy')
+        align_and_save(ImgPath, SavePath, SaveInput, SaveParam, UpScaleWhole)
+
+
+    ####### Step 3: Face Landmark Detection from the Cropped Image ########
+    print('\n####################### Step 3: Face Landmark Detection #######################\n')
+    SaveLandmarkPath = os.path.join(ResultsDir,'Step3_Landmarks')
+
+    if len(gpu_ids) > 0:
+        dev = 'cuda:{}'.format(gpu_ids[0])
+    else:
+        dev = 'cpu'
+    FD = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D,device=dev, flip_input=False)
+    if not os.path.exists(SaveLandmarkPath):
+        os.makedirs(SaveLandmarkPath)
+
+    ImgPaths = make_dataset(SaveCropPath)
+
+
+    for i,ImgPath in enumerate(ImgPaths):
+        ImgName = os.path.split(ImgPath)[-1]
+        Img = io.imread(ImgPath)
+        try:
+            PredsAll = FD.get_landmarks(Img)
+        except:
+            print('\t################ Error in face detection, continue...')
+            continue
+        if PredsAll is None:
+            print('\t################ No face, continue...')
+            continue
+        ins = 0
+        if len(PredsAll)!=1:
+            hights = []
+            for l in PredsAll:
+                hights.append(l[8,1] - l[19,1])
+            ins = hights.index(max(hights))
+        preds = PredsAll[ins]
+        AddLength = np.sqrt(np.sum(np.power(preds[27][0:2]-preds[33][0:2],2)))
+        SaveName = ImgName+'.txt'
+        np.savetxt(os.path.join(SaveLandmarkPath,SaveName),preds[:,0:2],fmt='%.3f')
+
+    ####################### Step 4: Face Restoration ######################
+    print('\n####################### Step 4: Face Restoration ##############################\n')
+    SaveRestorePath = os.path.join(ResultsDir,'Step4_RestoreCropFace')# Only Face Results
+    if not os.path.exists(SaveRestorePath):
+        os.makedirs(SaveRestorePath)
+    model = create_model(opt)
+    model.setup(opt)
+    ImgPaths = make_dataset(SaveCropPath)
+    total = 0
+
+    for i, ImgPath in enumerate(ImgPaths):
+        ImgName = os.path.split(ImgPath)[-1]
+        data = obtain_inputs(SaveCropPath, SaveLandmarkPath, ImgName)
+        if data == 0:
+            print('\t################ Error in landmark file, continue...')
+            continue
+        total = total + 1
+        model.set_input(data)
+        try:
+            model.test()
+            visuals = model.get_current_visuals()
+            save_crop(visuals,os.path.join(SaveRestorePath,ImgName))
+        except Exception as e:
+            print('\t################ Error in enhancing this image: {}'.format(str(e)))
+            print('\t################ continue...')
+            continue
+
+    print('\n############### Step 5: Paste the Restored Face to the Input Image ############\n')
+    SaveRestorePath = os.path.join(ResultsDir,'Step4_RestoreCropFace')
+    SaveFinalPath = os.path.join(ResultsDir,'Step5_FinalFrames')
+    SaveParamPath = os.path.join(ResultsDir,'Step2_AffineParam') #save the inverse affine parameters
+    if not os.path.exists(SaveFinalPath):
+        os.makedirs(SaveFinalPath)
+    ImgPaths = make_dataset(SaveRestorePath)
+
+    for i,ImgPath in enumerate(ImgPaths):
+        ImgName = os.path.split(ImgPath)[-1]
+        WholeInputPath = os.path.join('.\Results\TestVideoResults\Step1_Frames', ImgName)
+        FaceResultPath = os.path.join(SaveRestorePath, ImgName)
+        ParamPath = os.path.join(SaveParamPath, ImgName+'.npy')
+        SaveWholePath = os.path.join(SaveFinalPath, ImgName)
+        reverse_align(WholeInputPath, FaceResultPath, ParamPath, SaveWholePath, UpScaleWhole)
+    print('Done!')
+
+    print('\n####################### Step 6: Merging frames into a new video ###########################\n')
+    path_orig_frame = './Results/TestVideoResults/Step1_Frames/'
+    path_to_img = './Results/TestVideoResults/Step5_FinalFrames/'
+    if len(os.listdir(path_to_img)) == 0:
+        path_to_img = './Results/TestVideoResults/Step4_RestoreCropFace/'
+    final_video = './Results/TestVideoResults/Step6_FinalVideo/'
+    if not os.path.exists(final_video):
+        os.makedirs(final_video)
+    img = os.listdir(path_to_img)
+    orig_img = os.listdir(path_orig_frame)
+    orig_img.sort()
+    staffs = []
+    fps_of_video = int(cv2.VideoCapture('./Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4').get(cv2.CAP_PROP_FPS))
+
+    for i in img:
+        if os.path.isfile(path_to_img + i):
+            staffs.append(path_to_img + i)
         else:
-            dev = 'cpu'
-        FD = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D,device=dev, flip_input=False)
-        if not os.path.exists(SaveLandmarkPath):
-            os.makedirs(SaveLandmarkPath)
-        ImgPaths = make_dataset(SaveCropPath)
-        for i,ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            print('Detecting {}'.format(ImgName))
-            Img = io.imread(ImgPath)
-            try:
-                PredsAll = FD.get_landmarks(Img)
-            except:
-                print('\t################ Error in face detection, continue...')
-                continue
-            if PredsAll is None:
-                print('\t################ No face, continue...')
-                continue
-            ins = 0
-            if len(PredsAll)!=1:
-                hights = []
-                for l in PredsAll:
-                    hights.append(l[8,1] - l[19,1])
-                ins = hights.index(max(hights))
-                # print('\t################ Warning: Detected too many face, only handle the largest one...')
-                # continue
-            preds = PredsAll[ins]
-            AddLength = np.sqrt(np.sum(np.power(preds[27][0:2]-preds[33][0:2],2)))
-            SaveName = ImgName+'.txt'
-            np.savetxt(os.path.join(SaveLandmarkPath,SaveName),preds[:,0:2],fmt='%.3f')
-
-        ####################### Step 3: Face Restoration ######################
-        print('\n####################### Step 3: Face Restoration ##############################\n')
-
-        SaveRestorePath = os.path.join(ResultsDir,'Step3_RestoreCropFace')# Only Face Results
-        if not os.path.exists(SaveRestorePath):
-            os.makedirs(SaveRestorePath)
-        model = create_model(opt)
-        model.setup(opt)
-        ImgPaths = make_dataset(SaveCropPath)
-        total = 0
-        for i, ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            print('Restoring {}'.format(ImgName))
-            data = obtain_inputs(SaveCropPath, SaveLandmarkPath, ImgName)
-            if data == 0:
-                print('\t################ Error in landmark file, continue...')
-                continue #
-            total = total + 1
-            model.set_input(data)
-            try:
-                model.test()
-                visuals = model.get_current_visuals()
-                save_crop(visuals,os.path.join(SaveRestorePath,ImgName))
-            except Exception as e:
-                print('\t################ Error in enhancing this image: {}'.format(str(e)))
-                print('\t################ continue...')
-                continue
-
-        print('\n############### Step 4: Paste the Restored Face to the Input Image ############\n')
-        SaveRestorePath = os.path.join(ResultsDir,'Step3_RestoreCropFace')# Only Face Results
-        SaveFinalPath = os.path.join(ResultsDir,'Step4_FinalResults')
-        SaveParamPath = os.path.join(ResultsDir,'Step1_AffineParam') #save the inverse affine parameters
-        if not os.path.exists(SaveFinalPath):
-            os.makedirs(SaveFinalPath)
-        ImgPaths = make_dataset(SaveRestorePath)
-        for i,ImgPath in enumerate(ImgPaths):
-            ImgName = os.path.split(ImgPath)[-1]
-            print('Final Restoring {}'.format(ImgName))
-            WholeInputPath = os.path.join(TestImgPath,ImgName)
-            FaceResultPath = os.path.join(SaveRestorePath, ImgName)
-            ParamPath = os.path.join(SaveParamPath, ImgName+'.npy')
-            SaveWholePath = os.path.join(SaveFinalPath, ImgName)
-            reverse_align(WholeInputPath, FaceResultPath, ParamPath, SaveWholePath, UpScaleWhole)
-        print('Done!')
-        '''
+            staffs.append(path_orig_frame + i)
+        staff = cv2.imread(staffs[0])  # get size from the 1st frame
+        name_video = final_video+'result.mp4'
+        writer = cv2.VideoWriter(
+            name_video,
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            fps_of_video,
+            (staff.shape[1], staff.shape[0]),  # width, height
+            isColor=len(staff.shape) > 2)
+        for staff in map(cv2.imread, staffs):
+            writer.write(staff)
+        writer.release()
+    print('Done!')
+    print('\nRemastering video did success, video name: result.mp4')
