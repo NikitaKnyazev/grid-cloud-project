@@ -1,5 +1,5 @@
 FROM python:3
-ADD index.py .
+COPY . /app
+WORKDIR /app
 RUN pip install flask
-COPY index-template-directory/ .
-CMD ["python", "index.py"]
+CMD ["python", "app.py"]

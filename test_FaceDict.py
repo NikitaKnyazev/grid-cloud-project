@@ -1,5 +1,5 @@
 #test_FaceDict.py --test_path ./TestData/TestWhole --results_dir ./Results/TestWholeResults --upscale_factor 4 --gpu_ids -1
-import os
+import os, shutil
 from options.test_options import TestOptions
 from data import CreateDataLoader
 from models import create_model
@@ -148,25 +148,18 @@ if __name__ == '__main__':
     source_url = opt.source_url
     target_start = opt.start
     target_end = opt.stop
+    path = os.getcwd()
 
     os.system('cls||clear')
     ########################### Test Param ################################
     gpu_ids = [] # gpu id. if use cpu, set gpu_ids = []
     UpScaleWhole = 4  # the upsamle scale. It should be noted that our face results are fixed to 512.
+    TestImgPath = path+'/TestData/TestVideo' # test video path
+    ResultsDir = path+'/Results/TestVideoResults' #save path
+    if True:
+        print('\n###################### Now Running the {} task ##############################'.format(6))
+        print('\n####################### Step 1: Download and crop video. Splitting into frames ###########################\n')
 
-
-    TestImgPath = './TestData/TestVideo' # test video path
-    ResultsDir = './Results/TestVideoResults' #save path
-    print('\n###################### Now Running the {} task ##############################'.format(6))
-
-    print('\n####################### Step 1: Download and crop video. Splitting into frames ###########################\n')
-
-    if source_url == '':
-        uploaded = files.upload()
-        for fn in uploaded.keys():
-            print('User uploaded file "{name}" with length {length} bytes'.format(name=fn, length=len(uploaded[fn])))
-        file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
-    else:
         try:
             ydl_opts = {
                 'format': 'bestvideo+audio/mp4',
@@ -174,25 +167,30 @@ if __name__ == '__main__':
                 }
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([source_url])
-            file_name = 'TestData/TestVideo/downloaded_video.mp4'
+            file_name = path+'/TestData/TestVideo/downloaded_video.mp4'
         except BaseException:
             fn = source_url.split('/')[-1]
-            file_name = "TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
+            file_name = path+"/TestData/TestVideo/downloaded_video." + fn.split(".")[-1]
 
-    #Crop video (h:m:s)
-    if target_end != '00:00:00':
-        dates1 = target_start.split(':')
-        dates2 = target_end.split(':')
-        target_start = int(dates1[0])*60*60 + int(dates1[1])*60 + int(dates1[2])
-        target_end = int(dates2[0])*60*60 + int(dates2[1])*60 + int(dates2[2])
-        SaveInputPath = os.path.join(ResultsDir,'Step1_Cropping')
+        #Crop video (h:m:s)
+        SaveInputPath = ResultsDir+'/Step1_Cropping'
         if not os.path.exists(SaveInputPath):
             os.makedirs(SaveInputPath)
-        new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
-        ffmpeg_extract_subclip(file_name, target_start, target_end, targetname=new_file_name)
+        print(SaveInputPath)
+        if target_end != '00:00:00':
+            dates1 = target_start.split(':')
+            dates2 = target_end.split(':')
+            target_start = int(dates1[0])*60*60 + int(dates1[1])*60 + int(dates1[2])
+            target_end = int(dates2[0])*60*60 + int(dates2[1])*60 + int(dates2[2])
+            new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
+            ffmpeg_extract_subclip(file_name, target_start, target_end, targetname=new_file_name)
+        else:
+            shutil.copy(file_name, SaveInputPath+'/crop_downloaded_video.mp4')
+            new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
         os.remove(file_name)
         file_name = new_file_name
 
+    '''
     SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')
     if not os.path.exists(SaveFramesPath):
         os.makedirs(SaveFramesPath)
@@ -350,3 +348,4 @@ if __name__ == '__main__':
         writer.release()
     print('Done!')
     print('\nRemastering video did success, video name: result.mp4')
+    '''

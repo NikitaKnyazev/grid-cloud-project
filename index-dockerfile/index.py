@@ -1,6 +1,6 @@
 import os
 
-f = 'template/index.html', 'r', encoding='UTF-8')
+f = open('index.html', 'r', encoding='UTF-8')
 s = f.read()
 f.close()
 

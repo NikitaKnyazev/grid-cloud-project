@@ -9,7 +9,7 @@ time1 = form.getfirst("timecod1", "00:00:00")
 time2 = form.getfirst("timecod2", "00:00:00")
 
 # Открываем HTML шаблон странички с результатами
-f=open('D:/учеба/4 курс/1 сем/grid cloud/project/grid-cloud-project/template/form.html','r')
+f=open('template/form.html','r')
 htmltemplate=f.read()
 f.close()
 
@@ -24,7 +24,7 @@ file_path="test_FaceDict.py --gpu_ids -1 --source_url "+url+" --start "+time1+" 
 os.system(f'py {file_path}')
 
 # Открываем HTML шаблон странички с результатами
-f=open('D:/учеба/4 курс/1 сем/grid cloud/project/grid-cloud-project/template/form2.html','r')
+f=open('template/form2.html','r')
 htmltemplate=f.read()
 f.close()
 
@@ -32,4 +32,4 @@ f.close()
 #print("Content-type: text/html\n")
 print(htmltemplate)
 
-subprocess.call("D:/учеба/4 курс/1 сем/grid cloud/project/grid-cloud-project/template/video.html", shell=True)
+subprocess.call("template/video.html", shell=True)
