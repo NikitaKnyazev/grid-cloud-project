@@ -1,25 +1,25 @@
 #test_FaceDict.py --test_path ./TestData/TestWhole --results_dir ./Results/TestWholeResults --upscale_factor 4 --gpu_ids -1
 import os, shutil
-from options.test_options import TestOptions
-from data import CreateDataLoader
-from models import create_model
-from util.visualizer import save_crop
-from util import html
+#from options.test_options import TestOptions
+#from data import CreateDataLoader
+#from models import create_model
+#from util.visualizer import save_crop
+#from util import html
 import numpy as np
 import math
 from PIL import Image
-import torchvision.transforms as transforms
-import torch
-import random
-import cv2
-import dlib
-from skimage import transform as trans
-from skimage import io
-from data.image_folder import make_dataset
+#import torchvision.transforms as transforms
+#import torch
+#import random
+#import cv2
+#import dlib
+#from skimage import transform as trans
+#from skimage import io
+#from data.image_folder import make_dataset
 import sys
 import youtube_dl
 sys.path.append('FaceLandmarkDetection')
-import face_alignment
+#import face_alignment
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 
@@ -138,6 +138,7 @@ def obtain_inputs(img_path, Landmark_path, img_name):
     return {'A':A.unsqueeze(0), 'C':C.unsqueeze(0), 'A_paths': A_paths,'Part_locations': Part_locations}
 
 if __name__ == '__main__':
+    '''
     opt = TestOptions().parse()
     opt.nThreads = 1   # test code only supports nThreads = 1
     opt.batchSize = 1  # test code only supports batchSize = 1
@@ -145,12 +146,16 @@ if __name__ == '__main__':
     opt.no_flip = True  # no flip
     opt.display_id = -1  # no visdom display
     opt.which_epoch = 'latest'
-    source_url = opt.source_url
-    target_start = opt.start
-    target_end = opt.stop
+    opt.gpu_ids = -1
+    '''
+
+    source_url = 'https://www.youtube.com/watch?v=si-thUvEvls'#opt.source_url
+    target_start = '00:00:30'#opt.start
+    target_end = '00:00:40'#opt.stop
+
     path = os.getcwd()
 
-    os.system('cls||clear')
+    #os.system('cls||clear')
     ########################### Test Param ################################
     gpu_ids = [] # gpu id. if use cpu, set gpu_ids = []
     UpScaleWhole = 4  # the upsamle scale. It should be noted that our face results are fixed to 512.
@@ -163,7 +168,7 @@ if __name__ == '__main__':
         try:
             ydl_opts = {
                 'format': 'bestvideo+audio/mp4',
-                'outtmpl': 'TestData/TestVideo/downloaded_video.mp4',
+                'outtmpl': path+'/TestData/TestVideo/downloaded_video.mp4',
                 }
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([source_url])
@@ -176,7 +181,8 @@ if __name__ == '__main__':
         SaveInputPath = ResultsDir+'/Step1_Cropping'
         if not os.path.exists(SaveInputPath):
             os.makedirs(SaveInputPath)
-        print(SaveInputPath)
+        if os.path.isfile(file_name):
+            print('Video downloaded')
         if target_end != '00:00:00':
             dates1 = target_start.split(':')
             dates2 = target_end.split(':')
@@ -189,6 +195,8 @@ if __name__ == '__main__':
             new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
         os.remove(file_name)
         file_name = new_file_name
+        if os.path.isfile(new_file_name):
+            print('Video cropped')
 
     '''
     SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')

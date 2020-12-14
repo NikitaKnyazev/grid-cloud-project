@@ -24,9 +24,9 @@ def form():
     time1 = request.args.get('timecod1')
     time2 = request.args.get('timecod2')
 
-    #file_path=os.getcwd()+"/test_FaceDict.py --gpu_ids -1 --source_url "+url+" --start "+time1+" --stop "+time2
+    file_path="/app/DFDNet/test_FaceDict.py"
     #file_path="test.py "+url+" "+time1
-    #os.system(f'py {file_path}')
+    os.system(f'py {file_path}')
     return render_template('form2.html')
 
 @app.route('/result', methods=['POST'])

@@ -1,0 +1,10 @@
+flask==1.1.2
+Pillow==8.0.1
+dominate==2.6.0
+youtube_dl==2020.12.9
+moviepy==1.0.3
+opencv-python==4.4.0.46
+tqdm==4.54.1
+cmake==3.18.4.post1
+dlib==19.21.1
+scikit-image==0.17.2
