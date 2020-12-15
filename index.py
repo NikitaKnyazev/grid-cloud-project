@@ -23,9 +23,9 @@ def form():
     process_video(url, time1, time2)
     return render_template('form2.html')
 
-@app.route('/DFDNet/Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4', methods=['GET', 'POST'])
+@app.route('/DFDNet/Results/TestVideoResults/Step6_FinalVideo/result.mp4', methods=['GET', 'POST'])
 def video_result():
-    return send_file('DFDNet/Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4', as_attachment=True)
+    return send_file('DFDNet/Results/TestVideoResults/Step6_FinalVideo/result.mp4', as_attachment=True)
 
 @app.route('/templates/video.png', methods=['GET', 'POST'])
 def img():
