@@ -1,35 +1,10 @@
 version: '3'
 
-#networks:
-#  some-net:
-  #  driver: bridge
-
 services:
-  #dfdnet:
-    #image: network
-    #container_name: network
-    #build: ./DFDNet/
-    #ports:
-    #  - 4000:4000
-    #networks:
-    #  - some-net
-    #volumes:
-    #  - ./DFDNet:/app/DFDNet
-    #environment:
-    #  HOST_APP: app
-
   app:
     image: app
     container_name: app
     build: .
     ports:
       - 5000:5000
-    #networks:
-    #  - some-net
-    #volumes:
-    #  - ./:/app
     restart: always
-    #environment:
-    #  HOST_NET: dfdnet
-    #links:
-    #  - dfdnet
