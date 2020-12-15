@@ -7,5 +7,3 @@ dominate==2.6.0
 opencv-python==4.4.0.46
 tqdm==4.54.1
 scikit-image==0.17.2
-dlib==19.21.1
-torchvision

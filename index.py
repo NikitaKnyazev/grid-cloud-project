@@ -2,8 +2,6 @@
 import os, shutil
 from flask import Flask, render_template, request, send_file
 from DFDNet.test_FaceDict import process_video
-#import youtube_dl
-#from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 app = Flask(__name__)
 

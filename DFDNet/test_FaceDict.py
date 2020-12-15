@@ -1,9 +1,9 @@
 import os, shutil
-from options.test_options import TestOptions
-from data import CreateDataLoader
-from models import create_model
-from util.visualizer import save_crop
-from util import html
+from DFDNet.options.test_options import TestOptions
+from DFDNet.data import CreateDataLoader
+from DFDNet.models import create_model
+from DFDNet.util.visualizer import save_crop
+from DFDNet.util import html
 import numpy as np
 import math
 from PIL import Image
@@ -14,11 +14,11 @@ import cv2
 import dlib
 from skimage import transform as trans
 from skimage import io
-from data.image_folder import make_dataset
+from DFDNet.data.image_folder import make_dataset
 import sys
 import youtube_dl
 sys.path.append('FaceLandmarkDetection')
-import face_alignment
+import DFDNet.face_alignment
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 
