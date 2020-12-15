@@ -137,7 +137,8 @@ def obtain_inputs(img_path, Landmark_path, img_name):
     C = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(C) #
     return {'A':A.unsqueeze(0), 'C':C.unsqueeze(0), 'A_paths': A_paths,'Part_locations': Part_locations}
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
+def process_video(source_url, target_start, target_end):
     '''
     opt = TestOptions().parse()
     opt.nThreads = 1   # test code only supports nThreads = 1
@@ -147,14 +148,14 @@ if __name__ == '__main__':
     opt.display_id = -1  # no visdom display
     opt.which_epoch = 'latest'
     opt.gpu_ids = -1
-    '''
 
     source_url = 'https://www.youtube.com/watch?v=si-thUvEvls'#opt.source_url
     target_start = '00:00:30'#opt.start
     target_end = '00:00:40'#opt.stop
+    '''
 
-    path = os.getcwd()
-
+    path = os.getcwd()+'/DFDNet'
+    print(path)
     #os.system('cls||clear')
     ########################### Test Param ################################
     gpu_ids = [] # gpu id. if use cpu, set gpu_ids = []
@@ -199,6 +200,7 @@ if __name__ == '__main__':
             print('Video cropped')
 
     '''
+    DFDNet/Results/TestVideoResults/Step1_Cropping
     SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')
     if not os.path.exists(SaveFramesPath):
         os.makedirs(SaveFramesPath)
