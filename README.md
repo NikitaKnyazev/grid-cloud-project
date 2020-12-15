@@ -12,7 +12,7 @@
 ### Перед запуском
 Для запуска сети необходимо в папке DFDNet создать папку weights и скачать туда веса модели (https://yadi.sk/d/PWTw92J5PAzMZg)<br>
 Также нужно скачать модели распознования в папку DictionaryCenter512 (https://yadi.sk/d/mC8U2zWDvFW6Yg)
-<br><br>
+<br>
 ### Требования:
 <ul>
   <li>Python 3.7+</li>
