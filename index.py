@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 #docker build -t myapp
 #docker run -d -p 5000:5000 myapp
 
 import os, shutil
 import subprocess
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from DFDNet.test_FaceDict import process_video
 import youtube_dl
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
@@ -14,13 +13,6 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    '''
-    path = os.getcwd()+'/Results/TestVideoResults/'
-    for dir in os.listdir(path):
-        for file in os.listdir(path+'/'+dir):
-            os.remove(path+'/'+dir+'/'+file)
-            #print(path+'/'+dir+'/'+file)
-            '''
     return render_template('index.html')
 
 @app.route('/form', methods=['GET', 'POST'])
@@ -35,6 +27,10 @@ def form():
     #requests.post('http://localhost:4000/', data={'source_url': url, 'target_start': time1, 'target_end': time2})
     process_video(url, time1, time2)
     return render_template('form2.html')
+
+@app.route('/DFDNet/Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4', methods=['GET', 'POST'])
+def video_result():
+    return send_file('DFDNet/Results/TestVideoResults/Step1_Cropping/crop_downloaded_video.mp4', as_attachment=True)
 
 @app.route('/result', methods=['POST'])
 def result():
