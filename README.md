@@ -18,7 +18,7 @@
   <li>Python 3.7+</li>
   <li>Docker Desktop</li>
 </ul>
-<br><br>
+<br>
 <h3>Запуск:</h3>
 <ol>
   <li>Скачать репозиторий (git clone) и веса, модели</li>
