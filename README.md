@@ -15,7 +15,7 @@
 <br>
 ### Требования:
 <ul>
-  <li>Python 3.7+</li>
+  <li>Nvidia GPU</li>
   <li>Docker Desktop</li>
 </ul>
 <br>
