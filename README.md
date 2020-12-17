@@ -17,11 +17,12 @@
 <ul>
   <li>Nvidia GPU</li>
   <li>Docker Desktop</li>
+  <li>Python 3.7+ (для локального запуска)<li>
 </ul>
 <br>
 <h3>Запуск:</h3>
 <ol>
   <li>Скачать репозиторий (git clone) и веса, модели</li>
   <li>Открыть докер, в корне запустить консоль и выполнить docker-compose up</li>
-  <li>Открыть http://localhost:5000/ в браузере</li>
+  <li>Открыть http://localhost:4000/ в браузере</li>
 </ol>
