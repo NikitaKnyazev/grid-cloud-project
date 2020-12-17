@@ -4,7 +4,7 @@ ADD . /app
 RUN pip install -U pip
 RUN pip install cmake
 RUN pip install dlib
-RUN pip install torch==1.7.1
-RUN pip install torchvision
+RUN apt-get update ##[edited]
+RUN apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip install -r requirements.txt
 CMD ["python", "index.py"]

@@ -3,13 +3,13 @@ import os.path
 import random
 import torchvision.transforms as transforms
 import torch
-from DFDNet.data.base_dataset import BaseDataset
-from DFDNet.data.image_folder import make_dataset
+from data.base_dataset import BaseDataset
+from data.image_folder import make_dataset
 from PIL import Image, ImageFilter
 import numpy as np
 import cv2
 import math
-from DFDNet.util import util
+from util import util
 from scipy.io import loadmat
 from PIL import Image
 import PIL

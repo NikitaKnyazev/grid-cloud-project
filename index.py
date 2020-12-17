@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import os, shutil
 from flask import Flask, render_template, request, send_file
-from DFDNet.test_FaceDict import process_video
+from test_FaceDict import process_video
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    path = os.getcwd()+'/DFDNet/Results/TestVideoResults/'
+    path ='./Results/TestVideoResults'
     for dir in os.listdir(path):
         for file in os.listdir(path+'/'+dir):
             os.remove(path+'/'+dir+'/'+file)
@@ -21,9 +21,9 @@ def form():
     process_video(url, time1, time2)
     return render_template('form2.html')
 
-@app.route('/DFDNet/Results/TestVideoResults/Step6_FinalVideo/result.mp4', methods=['GET', 'POST'])
+@app.route('/Results/TestVideoResults/Step6_FinalVideo/result.mp4', methods=['GET', 'POST'])
 def video_result():
-    return send_file('DFDNet/Results/TestVideoResults/Step6_FinalVideo/result.mp4', as_attachment=True)
+    return send_file('Results/TestVideoResults/Step6_FinalVideo/result.mp4', as_attachment=True)
 
 @app.route('/templates/video.png', methods=['GET', 'POST'])
 def img():
@@ -32,6 +32,7 @@ def img():
 @app.route('/result', methods=['GET','POST'])
 def result():
     return render_template('form.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

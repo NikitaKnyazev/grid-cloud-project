@@ -1,8 +1,8 @@
 # -- coding: utf-8 --
 import importlib
 import torch.utils.data
-from DFDNet.data.base_data_loader import BaseDataLoader
-from DFDNet.data.base_dataset import BaseDataset
+from data.base_data_loader import BaseDataLoader
+from data.base_dataset import BaseDataset
 
 
 def find_dataset_using_name(dataset_name):

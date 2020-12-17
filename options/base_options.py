@@ -1,6 +1,6 @@
 import argparse
 import os
-from DFDNet.util import util
+from util import util
 import torch
 import models
 import data
