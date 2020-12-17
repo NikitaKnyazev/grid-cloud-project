@@ -18,13 +18,13 @@ from data.image_folder import make_dataset
 import sys
 import youtube_dl
 sys.path.append('FaceLandmarkDetection')
-import FaceLandmarkDetection.face_alignment
+import face_alignment
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 
 
 def get_5_points(img):
-    dets = detector(img, 1)
+    dets = dlib.get_frontal_face_detector()(img, 1)
     if len(dets) == 0:
         return None
     areas = []
@@ -146,7 +146,7 @@ def process_video(source_url, target_start, target_end):
     opt.which_epoch = 'latest'
     opt.gpu_ids = -1
 
-    path = 'app/DFDNet'
+    path = '.'
 
     ########################### Test Param ################################
     gpu_ids = [] # gpu id. if use cpu, set gpu_ids = []
@@ -183,7 +183,7 @@ def process_video(source_url, target_start, target_end):
             new_file_name = SaveInputPath+'/crop_downloaded_video.mp4'
         os.remove(file_name)
         file_name = new_file_name
-        '''
+
         SaveFramesPath = os.path.join(ResultsDir,'Step1_Frames')
         if not os.path.exists(SaveFramesPath):
             os.makedirs(SaveFramesPath)
@@ -203,6 +203,7 @@ def process_video(source_url, target_start, target_end):
         except:
             print("Video uploaded!\n")
 
+
     ###########Step 2: Crop and Align Face from the whole Image ###########
         print('\n####################### Step 2: Crop and Align Face ###########################\n')
         detector = dlib.cnn_face_detection_model_v1('./packages/mmod_human_face_detector.dat')
@@ -216,6 +217,7 @@ def process_video(source_url, target_start, target_end):
         if not os.path.exists(SaveParamPath):
             os.makedirs(SaveParamPath)
 
+        ImgPaths = make_dataset(SaveFramesPath)
         for i, ImgPath in enumerate(ImgPaths):
             ImgName = os.path.split(ImgPath)[-1]
             SavePath = os.path.join(SaveCropPath,ImgName)
@@ -334,4 +336,3 @@ def process_video(source_url, target_start, target_end):
                 writer.write(staff)
             writer.release()
         print('\nRemastering video did success, video name: result.mp4')
-        '''
