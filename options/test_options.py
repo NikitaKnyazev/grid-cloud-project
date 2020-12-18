@@ -15,9 +15,6 @@ class TestOptions(BaseOptions):
         parser.add_argument('--results_dir', type=str, default='./Results/TestWholeResults', help='saves results here.')
         parser.add_argument('--upscale_factor', type=int, default=4, help='upscale factor for the whole input image (not for face)')
 
-        parser.add_argument('--source_url', type=str, default='', help='Url link')
-        parser.add_argument('--start', type=str, default='00:00:00', help='Timecod to start')
-        parser.add_argument('--stop', type=str, default='00:00:00', help='Timecod to stop')
-
+        
         self.isTrain = False
         return parser

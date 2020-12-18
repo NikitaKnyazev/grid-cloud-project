@@ -28,7 +28,7 @@ class AlignedDataset(BaseDataset):
         self.AB_paths = sorted(make_dataset(self.dir_AB))
         self.is_real = opt.is_real
         # assert(opt.resize_or_crop == 'resize_and_crop')
-        assert(opt.resize_or_crop == 'degradation')
+        assert(opt.resize_or_crop == 'degradation')   
 
     def AddNoise(self,img): # noise
         if random.random() > 0.9: #
@@ -77,11 +77,11 @@ class AlignedDataset(BaseDataset):
     def AddUpSample(self,img):
         return img.resize((self.opt.fineSize, self.opt.fineSize), Image.BICUBIC)
 
-    def __getitem__(self, index): #
+    def __getitem__(self, index): # 
 
         AB_path = self.AB_paths[index]
         Imgs = Image.open(AB_path).convert('RGB')
-        # #
+        # # 
         A = Imgs.resize((self.opt.fineSize, self.opt.fineSize))
         A = transforms.ColorJitter(0.3, 0.3, 0.3, 0)(A)
         C = A
@@ -90,13 +90,13 @@ class AlignedDataset(BaseDataset):
         tmps = AB_path.split('/')
         ImgName = tmps[-1]
         Part_locations = self.get_part_location(self.partpath, ImgName, 2)
-
-        A = transforms.ToTensor()(A) #
+   
+        A = transforms.ToTensor()(A) # 
         C = transforms.ToTensor()(C)
-
+        
         ##
-        A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A) #
-        C = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(C) #
+        A = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(A) # 
+        C = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))(C) # 
         return {'A':A, 'C':C, 'A_paths': AB_path,'Part_locations': Part_locations}
 
     def get_part_location(self, landmarkpath, imgname, downscale=1):
@@ -106,7 +106,7 @@ class AlignedDataset(BaseDataset):
                 tmp = [np.float(i) for i in line.split(' ') if i != '\n']
                 Landmarks.append(tmp)
         Landmarks = np.array(Landmarks)/downscale # 512 * 512
-
+        
         Map_LE = list(np.hstack((range(17,22), range(36,42))))
         Map_RE = list(np.hstack((range(22,27), range(42,48))))
         Map_NO = list(range(29,36))

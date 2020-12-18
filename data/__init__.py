@@ -22,7 +22,7 @@ def find_dataset_using_name(dataset_name):
         if name.lower() == target_dataset_name.lower() \
            and issubclass(cls, BaseDataset):
             dataset = cls
-
+            
     if dataset is None:
         print("In %s.py, there should be a subclass of BaseDataset with class name that matches %s in lowercase." % (dataset_filename, target_dataset_name))
         exit(0)
@@ -30,7 +30,7 @@ def find_dataset_using_name(dataset_name):
     return dataset
 
 
-def get_option_setter(dataset_name):
+def get_option_setter(dataset_name):    
     dataset_class = find_dataset_using_name(dataset_name)
     return dataset_class.modify_commandline_options
 

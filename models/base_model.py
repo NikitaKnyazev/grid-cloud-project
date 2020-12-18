@@ -11,7 +11,7 @@ class BaseModel():
     @staticmethod
     def modify_commandline_options(parser, is_train):
         return parser
-    
+
     def name(self):
         return 'BaseModel'
 
@@ -20,6 +20,7 @@ class BaseModel():
         self.gpu_ids = opt.gpu_ids
         self.isTrain = opt.isTrain
         self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if self.gpu_ids else torch.device('cpu')
+        #self.device = torch.device('cpu')
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
         if opt.resize_or_crop != 'scale_width':
             torch.backends.cudnn.benchmark = True

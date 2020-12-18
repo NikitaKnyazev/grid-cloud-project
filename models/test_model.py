@@ -40,7 +40,7 @@ class TestModel(BaseModel):
         self.Part_locations = input['Part_locations']
 
     def forward(self):
-        
+
         self.fake_A = self.netG(self.real_A, self.Part_locations) #
         # try:
         #     self.fake_A = self.netG(self.real_A, self.Part_locations) #生成图
